@@ -230,6 +230,29 @@ public class CodePushUpdateManager {
     }
 
     /**
+     * Gets the path to current update contents.
+     *
+     * @param updateEntryPath path to the update in package contents, if provided.
+     * @return path to current update contents.
+     */
+    public String getCurrentUpdatePath(String updateEntryPath) throws CodePushGetPackageException, IOException {
+        String packageFolder;
+        try {
+            packageFolder = getCurrentPackageFolderPath();
+        } catch (CodePushMalformedDataException e) {
+            throw new CodePushGetPackageException(e);
+        }
+        if (packageFolder == null) {
+            return null;
+        }
+        CodePushLocalPackage currentPackage = getCurrentPackage();
+        if (currentPackage == null) {
+            return null;
+        }
+        return mFileUtils.appendPathComponent(packageFolder, updateEntryPath);
+    }
+
+    /**
      * Gets the identifier of the current package (hash).
      *
      * @return the identifier of the current package.
@@ -452,27 +475,24 @@ public class CodePushUpdateManager {
             throw new CodePushMergeException(e);
         }
         String appEntryPoint = mCodePushUpdateUtils.findEntryPointInUpdateContents(newUpdateFolderPath, expectedEntryPointFileName);
-        if (appEntryPoint == null) {
-            throw new CodePushMergeException("Update is invalid - An entry point file named \"" + expectedEntryPointFileName + "\" could not be found within the downloaded contents. Please check that you are releasing your CodePush updates using the exact same JS entry point file name that was shipped with your app's binary.");
-        } else {
-            if (mFileUtils.fileAtPathExists(newUpdateMetadataPath)) {
-                File metadataFileFromOldUpdate = new File(newUpdateMetadataPath);
-                if (!metadataFileFromOldUpdate.delete()) {
-                    throw new CodePushMergeException("Couldn't delete metadata file from old update " + newUpdateMetadataPath);
-                }
+
+        if (mFileUtils.fileAtPathExists(newUpdateMetadataPath)) {
+            File metadataFileFromOldUpdate = new File(newUpdateMetadataPath);
+            if (!metadataFileFromOldUpdate.delete()) {
+                throw new CodePushMergeException("Couldn't delete metadata file from old update " + newUpdateMetadataPath);
             }
-            if (isDiffUpdate) {
-                AppCenterLog.info(CodePush.LOG_TAG, "Applying diff update.");
-            } else {
-                AppCenterLog.info(CodePush.LOG_TAG, "Applying full update.");
-            }
-            try {
-                verifySignature(stringPublicKey, newUpdateHash, isDiffUpdate);
-            } catch (CodePushSignatureVerificationException e) {
-                throw new CodePushMergeException(e);
-            }
-            return appEntryPoint;
         }
+        if (isDiffUpdate) {
+            AppCenterLog.info(CodePush.LOG_TAG, "Applying diff update.");
+        } else {
+            AppCenterLog.info(CodePush.LOG_TAG, "Applying full update.");
+        }
+        try {
+            verifySignature(stringPublicKey, newUpdateHash, isDiffUpdate);
+        } catch (CodePushSignatureVerificationException e) {
+            throw new CodePushMergeException(e);
+        }
+        return appEntryPoint;
     }
 
     /**

@@ -65,6 +65,14 @@ public class CodePushSyncOptions {
     private CodePushCheckFrequency checkFrequency;
 
     /**
+     * Whether sdk should restart the application after an update is made.
+     * In case of assets replacement this flag is recommended to be set to <code>false</code>,
+     * although in Android application, a restart is not going to be made anyway.
+     */
+    @SerializedName("shouldRestart")
+    private boolean shouldRestart;
+
+    /**
      * Creates default instance of sync options.
      *
      * @param deploymentKey the deployment key you want to query for an update against.
@@ -76,6 +84,26 @@ public class CodePushSyncOptions {
         setMinimumBackgroundDuration(0);
         setIgnoreFailedUpdates(true);
         setCheckFrequency(CodePushCheckFrequency.ON_APP_START);
+        setShouldRestart(true);
+    }
+
+
+    /**
+     * Gets whether a restart after update is needed.
+     *
+     * @return whether a restart after update is needed.
+     */
+    public boolean shouldRestart() {
+        return shouldRestart;
+    }
+
+    /**
+     * Sets whether a restart after update is needed.
+     *
+     * @param shouldRestart whether a restart after update is needed.
+     */
+    public void setShouldRestart(boolean shouldRestart) {
+        this.shouldRestart = shouldRestart;
     }
 
     /**

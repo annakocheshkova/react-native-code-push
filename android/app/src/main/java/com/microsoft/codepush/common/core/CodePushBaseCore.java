@@ -370,6 +370,15 @@ public abstract class CodePushBaseCore {
     }
 
     /**
+     * Gets current package update entry point.
+     * @return path to update contents.
+     */
+    public String getPackageFolder() throws CodePushNativeApiCallException, CodePushGetPackageException, IOException {
+        CodePushLocalPackage codePushLocalPackage = getCurrentPackage();
+        return mManagers.mUpdateManager.getPackageFolderPath(codePushLocalPackage.getPackageHash());
+    }
+
+    /**
      * Retrieves the metadata for an installed update (e.g. description, mandatory)
      * whose state matches the specified <code>updateState</code> parameter.
      *
@@ -960,7 +969,7 @@ public abstract class CodePushBaseCore {
         installUpdate(localPackage, resolvedInstallMode, syncOptions.getMinimumBackgroundDuration());
         notifyAboutSyncStatusChange(UPDATE_INSTALLED);
         mState.mSyncInProgress = false;
-        if (resolvedInstallMode == IMMEDIATE) {
+        if (resolvedInstallMode == IMMEDIATE  && syncOptions.shouldRestart()) {
             try {
                 mManagers.mRestartManager.restartApp(false);
             } catch (CodePushMalformedDataException e) {

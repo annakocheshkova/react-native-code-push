@@ -354,34 +354,36 @@ public class CodePushReactNativeCore extends CodePushBaseCore {
             if (instanceManager == null) {
                 return;
             }
-            String latestJSBundleFile = getJSBundleFile(mAppEntryPoint);
+            if (mAppEntryPoint != null) {
+                String latestJSBundleFile = getJSBundleFile(mAppEntryPoint);
 
-            /* #2) Update the locally stored JS bundle file path. */
-            setJSBundle(instanceManager, latestJSBundleFile);
+                /* #2) Update the locally stored JS bundle file path. */
+                setJSBundle(instanceManager, latestJSBundleFile);
 
-            /* #3) Get the context creation method and fire it on the UI thread (which RN enforces). */
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    try {
+                /* #3) Get the context creation method and fire it on the UI thread (which RN enforces). */
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
 
                         /* We don't need to resetReactRootViews anymore
                         /* due the issue https://github.com/facebook/react-native/issues/14533
                         /* has been fixed in RN 0.46.0
                         /* resetReactRootViews(instanceManager); */
-                        instanceManager.recreateReactContextInBackground();
-                        initializeUpdateAfterRestart();
-                        if (codePushRestartListener != null) {
-                            codePushRestartListener.onRestartFinished();
-                        }
-                    } catch (Exception e) {
+                            instanceManager.recreateReactContextInBackground();
+                            initializeUpdateAfterRestart();
+                            if (codePushRestartListener != null) {
+                                codePushRestartListener.onRestartFinished();
+                            }
+                        } catch (Exception e) {
 
-                        /* The recreation method threw an unknown exception so just simply fallback to restarting the Activity (if it exists). */
-                        trackException(e);
-                        loadBundleLegacy();
+                            /* The recreation method threw an unknown exception so just simply fallback to restarting the Activity (if it exists). */
+                            trackException(e);
+                            loadBundleLegacy();
+                        }
                     }
-                }
-            });
+                });
+            }
 
         } catch (Exception e) {
 

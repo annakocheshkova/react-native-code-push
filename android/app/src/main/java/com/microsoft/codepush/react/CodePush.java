@@ -17,6 +17,7 @@ import com.microsoft.codepush.common.datacontracts.CodePushLocalPackage;
 import com.microsoft.codepush.common.datacontracts.CodePushRemotePackage;
 import com.microsoft.codepush.common.datacontracts.CodePushSyncOptions;
 import com.microsoft.codepush.common.enums.CodePushUpdateState;
+import com.microsoft.codepush.common.exceptions.CodePushGetPackageException;
 import com.microsoft.codepush.common.exceptions.CodePushInitializeException;
 import com.microsoft.codepush.common.exceptions.CodePushNativeApiCallException;
 import com.microsoft.codepush.common.interfaces.CodePushDownloadProgressListener;
@@ -25,6 +26,7 @@ import com.microsoft.codepush.common.managers.CodePushAcquisitionManager;
 import com.microsoft.codepush.react.interfaces.ReactInstanceHolder;
 import com.microsoft.codepush.react.utils.ReactPlatformUtils;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -291,6 +293,13 @@ public class CodePush implements ReactPackage, Serializable {
     }
 
     /**
+     * Notifies that application has applied all the changes successfully.
+     */
+    public void notifyApplicationReady() throws CodePushNativeApiCallException {
+       mReactNativeCore.notifyApplicationReady();
+    }
+
+    /**
      * Creates default builder for this class.
      *
      * @param deploymentKey application deployment key.
@@ -328,6 +337,19 @@ public class CodePush implements ReactPackage, Serializable {
      */
     public static void setReactInstanceHolder(ReactInstanceHolder reactInstanceHolder) {
         CodePushReactNativeCore.setReactInstanceHolder(reactInstanceHolder);
+    }
+
+    /**
+     * Gets an update directory.
+     *
+     * @return path to the directory containing the updates.
+     */
+    public String getPackageFolderPath() throws CodePushNativeApiCallException {
+        try {
+            return mReactNativeCore.getPackageFolder();
+        } catch (CodePushGetPackageException | IOException e) {
+            throw new CodePushNativeApiCallException(e);
+        }
     }
 
     /**
